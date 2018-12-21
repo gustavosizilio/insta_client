@@ -1,5 +1,5 @@
 {
-  "name": "insta_api",
+  "name": "@gustavosizilio/insta_api",
   "version": "1.0.0",
   "description": "",
   "main": "insta.js",

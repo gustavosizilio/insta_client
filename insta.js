@@ -1,54 +1,92 @@
 let axios = require("axios");
 let md5 = require('md5');
 
-/*
-** Calculate the value of the X-Instagram-GIS header by md5 hashing together the rhx_gis variable and the query variables for the request.
-*/
-generateRequestSignature = function (rhxGis, queryVariables) {
-    return md5(`${rhxGis}:${queryVariables}`);
-};
+var insta = new function () {
+    this.rhxGis = null;
+    this.rootURL = 'https://www.instagram.com/';
+    this.queryURL = 'https://www.instagram.com/graphql/query/';
 
-module.exports.getPostLikes = function getPostLikes({post, end_cursor, data}) {
-    if(!data) {
-        data = [];
+    this.query = {
+        getPostLikes : "e0f59e4a1c8d78d0161873bc2ee7ec44",
+        defaultPageSize: 50
     }
-    return axios.get('https://www.instagram.com/',
-     { 
-         "headers":{ 
-             'credentials': 'include',
-             'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
-         }
-     }
-    ).then(r => {
 
-        let resposeText = r.data;
-        const rhxGis = (RegExp('"rhx_gis":"([a-f0-9]{32})"', 'g')).exec(resposeText)[1];
-        const csrftoken = (RegExp('"csrf_token":"([a-zA-Z0-9]{32})"', 'g')).exec(resposeText)[1];
-        
-        //QUERY MUST BE ENCODED!
-        // const queryVariables = JSON.stringify({"shortcode":"BrA7vWYHIsF","include_reel":true,"first":12,"after":"QVFCRlNCNnFNT28zT3ZTV2EtNXo3MjhfazZTT1oyX3AtdjQwdUlBc053aG9JUU9lOEhpZWYwT2JjNDRJWlpFSklJTFBjMWtZci1fTW1QdFRBNnR2WmFYTw=="});
-        let queryObj = {"shortcode":post,"include_reel":true,"first":50};
-        if(end_cursor){
-            queryObj.after = end_cursor;
+    this.generateRequestSignature = function (queryVariables) {
+        return this.getRhxGis().then((rhxGis) => {
+            return md5(`${rhxGis}:${JSON.stringify(queryVariables)}`);
+        })
+    };
+
+    //Used if the client can store the token
+    this.instance = function(rhxGis){
+        this.setRhxGis(rhxGis);
+        return this;
+    }
+
+
+    this.setRhxGis = function(rhxGis) {
+        this.rhxGis = rhxGis; 
+    }
+
+    this.getRhxGis = function() {
+        if(this.rhxGis){
+            return new Promise((resolve, reject) => {
+                resolve(this.rhxGis);
+            })
+        } else {
+            return axios.get(this.rootURL,
+                {
+                    "headers": {
+                        'credentials': 'include',
+                        'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
+                    }
+                }
+            ).then(r => {
+                let resposeText = r.data;
+                this.setRhxGis((RegExp('"rhx_gis":"([a-f0-9]{32})"', 'g')).exec(resposeText)[1]);
+                // const csrftoken = (RegExp('"csrf_token":"([a-zA-Z0-9]{32})"', 'g')).exec(resposeText)[1];
+                return this.rhxGis;
+            });
         }
-        const queryVariables = JSON.stringify(queryObj);
-        const queryHash = "e0f59e4a1c8d78d0161873bc2ee7ec44"; //WHat to query?  
-        const signature = generateRequestSignature(rhxGis, queryVariables);
-        
-        console.log(`https://www.instagram.com/graphql/query/?query_hash=${queryHash}&variables=${queryVariables}`);
-        return axios.get(
-            `https://www.instagram.com/graphql/query/?query_hash=${queryHash}&variables=${queryVariables}`,
-            {   
-                "headers":{
-                    'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
-                    'x-instagram-gis': `${signature}`
-                },
-        }).then(res => {
-            if(res.data.data.shortcode_media && res.data.data.shortcode_media.edge_liked_by && res.data.data.shortcode_media.edge_liked_by.edges) {
+    }
+
+    this.makeRequest = function({ queryHash, queryVariables }) {
+        return this.generateRequestSignature(queryVariables)
+        .then(signature => {
+            return axios.get(
+                `${this.queryURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
+                {
+                    "headers": {
+                        'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
+                        'x-instagram-gis': `${signature}`
+                    },
+                })
+        });
+    }
+
+
+    this.getPostLikes = function({ post, limit, end_cursor, data = [] }) {
+        const queryHash = this.query.getPostLikes;
+        let pagesize = this.query.defaultPageSize;
+        let remaining = limit - data.length;
+        if (remaining <= pagesize) {
+            pagesize = remaining;
+        }
+        let queryVariables = { "shortcode": post, "include_reel": true, "first": pagesize };
+
+        if (end_cursor) {
+            queryVariables.after = end_cursor;
+        }
+        return this.makeRequest({ queryHash, queryVariables }).then(res => {
+            if (res.data.data.shortcode_media && res.data.data.shortcode_media.edge_liked_by && res.data.data.shortcode_media.edge_liked_by.edges) {
                 data = data.concat(res.data.data.shortcode_media.edge_liked_by.edges);
-                if(res.data.data.shortcode_media.edge_liked_by.page_info.has_next_page){
-                    return getPostLikes({
+                if (
+                    res.data.data.shortcode_media.edge_liked_by.page_info.has_next_page &&
+                    remaining > pagesize
+                ) {
+                    return this.getPostLikes({
                         post: post,
+                        limit: limit,
                         end_cursor: res.data.data.shortcode_media.edge_liked_by.page_info.end_cursor,
                         data: data
                     })
@@ -58,8 +96,53 @@ module.exports.getPostLikes = function getPostLikes({post, end_cursor, data}) {
             } else {
                 return data;
             }
-        }).catch(err => {
-            console.log(err.message);
         })
-    });
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // getUserPosts = function getUserPosts({ user, end_cursor, data }) {
+    //     if (!data) {
+    //         data = [];
+    //     }
+    //     let queryVariables = { "id": user, "first": 50 };
+    //     if (end_cursor) {
+    //         queryVariables.after = end_cursor;
+    //     }
+    //     const queryHash = "66eb9403e44cc12e5b5ecda48b667d41"; //WHat to query?  
+
+    //     return makeRequest({ queryHash, queryVariables }).then(res => {
+    //         console.log(res.data.data);
+    //         // if(res.data.data.shortcode_media && res.data.data.shortcode_media.edge_liked_by && res.data.data.shortcode_media.edge_liked_by.edges) {
+    //         //     data = data.concat(res.data.data.shortcode_media.edge_liked_by.edges);
+    //         //     if(res.data.data.shortcode_media.edge_liked_by.page_info.has_next_page){
+    //         //         return getUserPosts({
+    //         //             user: user,
+    //         //             end_cursor: res.data.data.shortcode_media.edge_liked_by.page_info.end_cursor,
+    //         //             data: data
+    //         //         })
+    //         //     } else {
+    //         //         return data;
+    //         //     }
+    //         // } else {
+    //         //     return data;
+    //         // }
+    //     })
+    // }
+
 }
+
+module.exports = insta;
