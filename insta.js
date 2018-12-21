@@ -5,11 +5,13 @@ let _ = require('lodash');
 var insta = new function () {
     this.rhxGis = null;
     this.rootURL = 'https://www.instagram.com/';
-    this.queryURL = 'https://www.instagram.com/graphql/query/';
+    this.graphqlURL = 'https://www.instagram.com/graphql/query/';
+    this.topSearchURL = "https://www.instagram.com/web/search/topsearch/"
 
     this.query = {
         getPostLikes: "e0f59e4a1c8d78d0161873bc2ee7ec44",
         getUserPosts: "66eb9403e44cc12e5b5ecda48b667d41",
+        getPostDetails: "49699cdb479dd5664863d4b647ada1f7",
         defaultPageSize: 50
     }
 
@@ -56,7 +58,7 @@ var insta = new function () {
         return this.generateRequestSignature(queryVariables)
             .then(signature => {
                 return axios.get(
-                    `${this.queryURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
+                    `${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
                     {
                         "headers": {
                             'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
@@ -89,7 +91,8 @@ var insta = new function () {
     this.defaultQuery = function ({ 
         queryHash,
         queryVariables,
-        edjeKey,
+        singleResult,
+        edgeKey,
         limit,
         end_cursor,
         data = []
@@ -100,7 +103,10 @@ var insta = new function () {
         });
         
         return this.makeRequest({ queryHash, queryVariables }).then(res => {
-            let edge = _.get(res, edjeKey);
+            let edge = _.get(res, `data.${edgeKey}`);
+            if(singleResult){
+                return edge;
+            }
             if (edge) {
                 data = data.concat(edge.edges);
                 if (
@@ -110,7 +116,7 @@ var insta = new function () {
                     return this.defaultQuery({
                         queryHash,
                         queryVariables,
-                        edjeKey,
+                        edgeKey,
                         limit: limit,
                         end_cursor: edge.page_info.end_cursor,
                         data: data
@@ -136,11 +142,26 @@ var insta = new function () {
      *
      */
 
+    this.getUser = function ({ identifier }) {
+        return axios.get(
+            `${this.topSearchURL}?query=${identifier}`)
+            .then(res => {
+                return new Promise((resolve, reject) => {
+                    res.data.users.forEach(data => {
+                        if(data.user.username == identifier){
+                            resolve(data.user);
+                        }
+                    });
+                    resolve(null);
+                })
+            })
+    }
+
     this.getPostLikes = function ({ identifier, limit, end_cursor, data = [] }) {
         return this.defaultQuery({
             queryHash: this.query.getPostLikes,
             queryVariables: { "shortcode": identifier, "include_reel": true },
-            edjeKey: 'data.data.shortcode_media.edge_liked_by',
+            edgeKey: 'data.shortcode_media.edge_liked_by',
             limit,
             end_cursor,
             data
@@ -151,7 +172,19 @@ var insta = new function () {
         return this.defaultQuery({
             queryHash: this.query.getUserPosts,
             queryVariables: { "id": identifier },
-            edjeKey: 'data.data.user.edge_owner_to_timeline_media',
+            edgeKey: 'data.user.edge_owner_to_timeline_media',
+            limit,
+            end_cursor,
+            data
+        })
+    }
+
+    this.getPostDetails = function ({ identifier, limit, end_cursor, data = [] }) {
+        return this.defaultQuery({
+            queryHash: this.query.getPostDetails,
+            queryVariables:  { "shortcode":identifier },
+            edgeKey: 'data.shortcode_media',
+            singleResult: true,
             limit,
             end_cursor,
             data
