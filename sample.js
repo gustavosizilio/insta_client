@@ -1,6 +1,6 @@
 let insta = new require("./insta").instance(); 
 
-insta.getPostLikes({post: "SQotORh6Gz", limit: 1}) //Pass the id of the post
+insta.getPostLikes({post: "SQotORh6Gz", limit: 80}) //Pass the id of the post
     .then(data => {
         // console.log(data); //Threat the data
         console.log(data.length); //Threat the data

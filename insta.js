@@ -64,25 +64,33 @@ var insta = new function () {
         });
     }
 
-
-    this.getPostLikes = function({ post, limit, end_cursor, data = [] }) {
-        const queryHash = this.query.getPostLikes;
+    this.buildPagination = function({queryVariables, limit, end_cursor, data = []}){
         let pagesize = this.query.defaultPageSize;
         let remaining = limit - data.length;
         if (remaining <= pagesize) {
             pagesize = remaining;
         }
-        let queryVariables = { "shortcode": post, "include_reel": true, "first": pagesize };
-
+        queryVariables.first = pagesize;
         if (end_cursor) {
             queryVariables.after = end_cursor;
         }
+        return {remaining, pagesize}
+    }
+
+
+    this.getPostLikes = function({ post, limit, end_cursor, data = [] }) {
+        let queryHash = this.query.getPostLikes;
+        let queryVariables = { "shortcode": post, "include_reel": true };
+        let pagination = this.buildPagination({
+            queryVariables, limit, end_cursor, data
+        });        
+
         return this.makeRequest({ queryHash, queryVariables }).then(res => {
             if (res.data.data.shortcode_media && res.data.data.shortcode_media.edge_liked_by && res.data.data.shortcode_media.edge_liked_by.edges) {
                 data = data.concat(res.data.data.shortcode_media.edge_liked_by.edges);
                 if (
                     res.data.data.shortcode_media.edge_liked_by.page_info.has_next_page &&
-                    remaining > pagesize
+                    pagination.remaining > pagination.pagesize
                 ) {
                     return this.getPostLikes({
                         post: post,
