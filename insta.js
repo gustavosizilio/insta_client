@@ -15,57 +15,68 @@ var insta = new function () {
         defaultPageSize: 50
     }
 
-    this.generateRequestSignature = function (queryVariables) {
-        return this.getRhxGis().then((rhxGis) => {
-            return md5(`${rhxGis}:${JSON.stringify(queryVariables)}`);
-        })
-    };
+    // this.generateRequestSignature = function (queryVariables) {
+    //     return this.getRhxGis().then((rhxGis) => {
+    //         return md5(`${rhxGis}:${JSON.stringify(queryVariables)}`);
+    //     })
+    // };
 
-    //Used if the client can store the token
+    // //Used if the client can store the token
     this.instance = function (rhxGis) {
-        this.setRhxGis(rhxGis);
+        // this.setRhxGis(rhxGis);
         return this;
     }
 
 
-    this.setRhxGis = function (rhxGis) {
-        this.rhxGis = rhxGis;
-    }
+    // this.setRhxGis = function (rhxGis) {
+    //     this.rhxGis = rhxGis;
+    // }
 
-    this.getRhxGis = function () {
-        if (this.rhxGis) {
-            return new Promise((resolve, reject) => {
-                resolve(this.rhxGis);
-            })
-        } else {
-            return axios.get(this.rootURL,
-                {
-                    "headers": {
-                        'credentials': 'include',
-                        'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
-                    }
-                }
-            ).then(r => {
-                let resposeText = r.data;
-                this.setRhxGis((RegExp('"rhx_gis":"([a-f0-9]{32})"', 'g')).exec(resposeText)[1]);
-                // const csrftoken = (RegExp('"csrf_token":"([a-zA-Z0-9]{32})"', 'g')).exec(resposeText)[1];
-                return this.rhxGis;
-            });
-        }
-    }
+    // this.getRhxGis = function () {
+    //     if (this.rhxGis) {
+    //         return new Promise((resolve, reject) => {
+    //             resolve(this.rhxGis);
+    //         })
+    //     } else {
+    //         return axios.get(this.rootURL,
+    //             {
+    //                 "headers": {
+    //                     'credentials': 'include',
+    //                     'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
+    //                 }
+    //             }
+    //         ).then(r => {
+    //             let resposeText = r.data;
+    //             console.log(resposeText);
+                
+    //             this.setRhxGis((RegExp('"rhx_gis":"([a-f0-9]{32})"', 'g')).exec(resposeText)[1]);
+    //             // const csrftoken = (RegExp('"csrf_token":"([a-zA-Z0-9]{32})"', 'g')).exec(resposeText)[1];
+    //             return this.rhxGis;
+    //         });
+    //     }
+    // }
 
     this.makeRequest = function ({ queryHash, queryVariables }) {
-        return this.generateRequestSignature(queryVariables)
-            .then(signature => {
-                return axios.get(
-                    `${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
-                    {
-                        "headers": {
-                            'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
-                            'x-instagram-gis': `${signature}`
-                        },
-                    })
-            });
+        return axios.get(
+                `${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
+                {
+                    "headers": {
+                        'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
+                        // 'x-instagram-gis': `${signature}`
+                    },
+                })
+
+        // return this.generateRequestSignature(queryVariables)
+        //     .then(signature => {
+        //         return axios.get(
+        //             `${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
+        //             {
+        //                 "headers": {
+        //                     'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
+        //                     'x-instagram-gis': `${signature}`
+        //                 },
+        //             })
+        //     });
     }
 
     this.buildPagination = function ({ queryVariables, limit, end_cursor, data = [] }) {
