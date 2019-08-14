@@ -11,6 +11,7 @@ var insta = new function () {
     this.query = {
         getPostLikes: "e0f59e4a1c8d78d0161873bc2ee7ec44",
         getUserPosts: "66eb9403e44cc12e5b5ecda48b667d41",
+        getUserFollowers: "c76146de99bb02f6415203be841dd25a",
         getPostDetails: "49699cdb479dd5664863d4b647ada1f7",
         defaultPageSize: 50
     }
@@ -57,6 +58,9 @@ var insta = new function () {
     // }
 
     this.makeRequest = function ({ queryHash, queryVariables }) {
+        // console.log(
+        //     `${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`);
+        
         return axios.get(
                 `${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
                 {
@@ -184,6 +188,18 @@ var insta = new function () {
             queryHash: this.query.getUserPosts,
             queryVariables: { "id": identifier },
             edgeKey: 'data.user.edge_owner_to_timeline_media',
+            limit,
+            end_cursor,
+            data
+        })
+    }
+
+    this.getUserFollowers = function ({ identifier, limit, end_cursor, data = [] }) {
+        return this.defaultQuery({
+            queryHash: this.query.getUserFollowers,
+            queryVariables: { "id": identifier, "first": limit },
+            edgeKey: 'data.user.edge_followed_by',
+            singleResult: true,
             limit,
             end_cursor,
             data

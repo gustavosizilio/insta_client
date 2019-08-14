@@ -5,6 +5,11 @@ insta.getUser({identifier: "gustavo.sizilio"})
         console.log(data); //Threat the data
     })
 
+insta.getUserFollowers({identifier: "26669533", limit: 10})
+    .then(data => {
+        console.log(data); //Threat the data
+    })
+
 insta.getUserPosts({identifier: "26669533", limit: 10})
     .then(data => {
         console.log(data); //Threat the data
