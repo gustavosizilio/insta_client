@@ -4,6 +4,7 @@ let _ = require('lodash');
 
 
 var insta = new function () {
+    this.userAgents = require('./user-agents-list.json')    
     this.axiosInstance = null;
     this.rhxGis = null;
     //USING HTTP BECAUSE OF THE PROXY!!!! TEST STRESSING IF NEED CHANGE TO HTTPS ON THE FUTURE
@@ -72,7 +73,7 @@ var insta = new function () {
                 `${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
                 {
                     headers: {
-                        'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
+                        'user-agent': this.userAgents[Math.floor(Math.random()*this.userAgents.length)],
                         // 'x-instagram-gis': `${signature}`
                     }
                 })
@@ -166,7 +167,13 @@ var insta = new function () {
 
     this.getUser = function ({ identifier }) {
         return this.axiosInstance.get(
-            `${this.topSearchURL}?query=${identifier}`)
+            `${this.topSearchURL}?query=${identifier}`,
+            {
+                headers: {
+                    'user-agent': this.userAgents[Math.floor(Math.random()*this.userAgents.length)],
+                    // 'x-instagram-gis': `${signature}`
+                }
+            })
             .then(res => {
                 return new Promise((resolve, reject) => {
                     res.data.users.forEach(data => {
