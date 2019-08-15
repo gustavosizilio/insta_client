@@ -1,4 +1,4 @@
-let insta = new require("./insta").instance(); 
+let insta = new require("./insta").instance({http_proxy: 'http://localhost:8118'}); 
 
 insta.getUser({identifier: "gustavo.sizilio"})
     .then(data => {

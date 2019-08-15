@@ -1,12 +1,17 @@
 let axios = require("axios");
 let md5 = require('md5');
 let _ = require('lodash');
+let httpsProxyAgent = require('https-proxy-agent');
+
+
 
 var insta = new function () {
+    this.axiosInstance = null;
     this.rhxGis = null;
-    this.rootURL = 'https://www.instagram.com/';
-    this.graphqlURL = 'https://www.instagram.com/graphql/query/';
-    this.topSearchURL = "https://www.instagram.com/web/search/topsearch/"
+    //USING HTTP BECAUSE OF THE PROXY!!!! TEST STRESSING IF NEED CHANGE TO HTTPS ON THE FUTURE
+    this.rootURL = 'http://www.instagram.com/';
+    this.graphqlURL = 'http://www.instagram.com/graphql/query/';
+    this.topSearchURL = "http://www.instagram.com/web/search/topsearch/"
 
     this.query = {
         getPostLikes: "e0f59e4a1c8d78d0161873bc2ee7ec44",
@@ -23,8 +28,12 @@ var insta = new function () {
     // };
 
     // //Used if the client can store the token
-    this.instance = function (rhxGis) {
-        // this.setRhxGis(rhxGis);
+    this.instance = function ({http_proxy=null}={}) {        
+        if(http_proxy) {
+            this.axiosInstance = axios.create({httpsAgent: new httpsProxyAgent(http_proxy)});
+        } else {
+            this.axiosInstance = axios.create();
+        }
         return this;
     }
 
@@ -61,13 +70,13 @@ var insta = new function () {
         // console.log(
         //     `${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`);
         
-        return axios.get(
+        return this.axiosInstance.get(
                 `${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
                 {
-                    "headers": {
+                    headers: {
                         'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
                         // 'x-instagram-gis': `${signature}`
-                    },
+                    }
                 })
 
         // return this.generateRequestSignature(queryVariables)
@@ -158,7 +167,7 @@ var insta = new function () {
      */
 
     this.getUser = function ({ identifier }) {
-        return axios.get(
+        return this.axiosInstance.get(
             `${this.topSearchURL}?query=${identifier}`)
             .then(res => {
                 return new Promise((resolve, reject) => {
