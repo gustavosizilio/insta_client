@@ -1,4 +1,9 @@
-let insta = new require("./insta").instance({http_proxy: 'http://localhost:8118'}); 
+let insta = new require("./insta").instance({ 
+    proxy: {
+        host: '127.0.0.1',
+        port: 8118
+    }
+}); 
 
 insta.getUser({identifier: "gustavo.sizilio"})
     .then(data => {

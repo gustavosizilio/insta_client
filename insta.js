@@ -1,8 +1,6 @@
 let axios = require("axios");
 let md5 = require('md5');
 let _ = require('lodash');
-let httpsProxyAgent = require('https-proxy-agent');
-
 
 
 var insta = new function () {
@@ -28,9 +26,9 @@ var insta = new function () {
     // };
 
     // //Used if the client can store the token
-    this.instance = function ({http_proxy=null}={}) {        
-        if(http_proxy) {
-            this.axiosInstance = axios.create({httpsAgent: new httpsProxyAgent(http_proxy)});
+    this.instance = function ({proxy=null}={}) {        
+        if(proxy) {
+            this.axiosInstance = axios.create({ proxy: proxy });
         } else {
             this.axiosInstance = axios.create();
         }
