@@ -68,11 +68,9 @@ var insta = new function () {
         data = []
     }) {
 
-        if(!singleResult) {
-            let pagination = this.buildPagination({
-                queryVariables, limit, end_cursor, data
-            });
-        }
+        let pagination = this.buildPagination({
+            queryVariables, limit, end_cursor, data
+        });
         
         return this.makeRequest({ queryHash, queryVariables }).then(res => {
             // console.log(res);
