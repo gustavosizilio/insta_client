@@ -7,7 +7,8 @@ var insta = new function () {
     //USING HTTP BECAUSE OF THE PROXY!!!! TEST STRESSING IF NEED CHANGE TO HTTPS ON THE FUTURE
     this.rootURL = 'https://www.instagram.com/';
     this.graphqlURL = 'https://www.instagram.com/graphql/query/';
-    this.topSearchURL = "https://www.instagram.com/web/search/topsearch/"
+    // this.topSearchURL = "https://www.instagram.com/web/search/topsearch/"
+    this.searchUserUrl = "https://www.instagram.com/${username}/?__a=1";
 
     this.query = {
         getPostLikes: "e0f59e4a1c8d78d0161873bc2ee7ec44",
@@ -117,9 +118,10 @@ var insta = new function () {
      */
 
     this.getUser = function ({ identifier }) {
-        console.log(`${this.topSearchURL}?query=${identifier}`);
+        let searchUrl = this.searchUserUrl.replace("${username}", identifier);
+        console.log(`${searchUrl}`);
         
-        return fetch(`${this.topSearchURL}?query=${identifier}`,
+        return fetch(`${searchUrl}`,
         {
             method: 'get',
             headers: { 
@@ -129,14 +131,7 @@ var insta = new function () {
         })
         .then(res => res.json())
         .then(res => {
-            return new Promise((resolve, reject) => {
-                res.users.forEach(data => {
-                    if(data.user.username == identifier){
-                        resolve(data.user);
-                    }
-                });
-                resolve(null);
-            })
+            return res.graphql.user;
         })
     }
     this.getUsername = function ({ identifier}) {
