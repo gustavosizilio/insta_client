@@ -1,9 +1,14 @@
 let insta = new require("./insta").instance({ }); 
 
-insta.getUser({identifier: "gustavo.sizilio"})
-    .then(data => {
-        console.log(data); //Threat the data
-    })
+
+insta.getUsername({identifier: "26669533"})
+.then(data => {
+    console.log(data); //Threat the data
+    insta.getUser({identifier: data})
+        .then(data => {
+            console.log(data); //Threat the data
+        })
+})
 
 // insta.getUserFollowers({identifier: "26669533", limit: 10})
 //     .then(data => {

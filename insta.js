@@ -68,15 +68,18 @@ var insta = new function () {
         data = []
     }) {
 
-        let pagination = this.buildPagination({
-            queryVariables, limit, end_cursor, data
-        });
+        if(!singleResult) {
+            let pagination = this.buildPagination({
+                queryVariables, limit, end_cursor, data
+            });
+        }
         
         return this.makeRequest({ queryHash, queryVariables }).then(res => {
             // console.log(res);
             
 
             let edge = _.get(res, `${edgeKey}`);
+            
             if(singleResult){
                 return edge;
             }
@@ -136,6 +139,14 @@ var insta = new function () {
                 });
                 resolve(null);
             })
+        })
+    }
+    this.getUsername = function ({ identifier}) {
+        return this.defaultQuery({
+            queryHash: this.query.getCovers,
+            queryVariables: { "user_id": identifier, "include_reel": true },
+            singleResult: true,
+            edgeKey: 'data.user.reel.user.username',
         })
     }
 
