@@ -5,9 +5,9 @@ let _ = require('lodash');
 
 var insta = new function () {
     //USING HTTP BECAUSE OF THE PROXY!!!! TEST STRESSING IF NEED CHANGE TO HTTPS ON THE FUTURE
-    this.rootURL = 'http://www.instagram.com/';
-    this.graphqlURL = 'http://www.instagram.com/graphql/query/';
-    this.topSearchURL = "http://www.instagram.com/web/search/topsearch/"
+    this.rootURL = 'https://www.instagram.com/';
+    this.graphqlURL = 'https://www.instagram.com/graphql/query/';
+    this.topSearchURL = "https://www.instagram.com/web/search/topsearch/"
 
     this.query = {
         getPostLikes: "e0f59e4a1c8d78d0161873bc2ee7ec44",
@@ -27,7 +27,8 @@ var insta = new function () {
             method: 'get',
             headers: { 
                 'Content-Type': 'application/json',
-                'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"
+                'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
+                'Content-Type': 'text/plain'
             },
         })
         .then(res => res.json())
