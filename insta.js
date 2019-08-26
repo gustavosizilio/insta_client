@@ -116,6 +116,8 @@ var insta = new function () {
      */
 
     this.getUser = function ({ identifier }) {
+        console.log(`${this.topSearchURL}?query=${identifier}`);
+        
         return fetch(`${this.topSearchURL}?query=${identifier}`,
         {
             method: 'get',
@@ -127,7 +129,7 @@ var insta = new function () {
         .then(res => res.json())
         .then(res => {
             return new Promise((resolve, reject) => {
-                res.data.users.forEach(data => {
+                res.users.forEach(data => {
                     if(data.user.username == identifier){
                         resolve(data.user);
                     }
@@ -155,17 +157,6 @@ var insta = new function () {
             edgeKey: 'data.user.edge_owner_to_timeline_media',
             limit,
             end_cursor,
-            data
-        })
-    }
-
-    this.getProfilePic = function ({ identifier, data = [] }) {
-        return this.defaultQuery({
-            queryHash: this.query.getCovers,
-            queryVariables: { "user_id": identifier, include_reel: true },
-            edgeKey: 'data.user.reel.user.profile_pic_url',
-            singleResult: true,
-            limit: 1,
             data
         })
     }

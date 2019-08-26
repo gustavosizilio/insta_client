@@ -1,14 +1,9 @@
-let insta = new require("./insta").instance({ 
-    // proxy: {
-    //     host: '127.0.0.1',
-    //     port: 8118
-    // }
-}); 
+let insta = new require("./insta").instance({ }); 
 
-// insta.getUser({identifier: "gustavo.sizilio"})
-//     .then(data => {
-//         console.log(data); //Threat the data
-//     })
+insta.getUser({identifier: "gustavo.sizilio"})
+    .then(data => {
+        console.log(data); //Threat the data
+    })
 
 // insta.getUserFollowers({identifier: "26669533", limit: 10})
 //     .then(data => {
@@ -19,11 +14,6 @@ let insta = new require("./insta").instance({
 //     .then(data => {
 //         console.log(data); //Threat the data
 //     })
-
-insta.getProfilePic({identifier: "26669533", limit: 10})
-    .then(data => {
-        console.log(data); //Threat the data
-    })
 
 // insta.getPostDetails({identifier: "SQotORh6Gz"})
 //     .then(data => {
