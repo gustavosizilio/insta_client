@@ -14,6 +14,7 @@ var insta = new function () {
         getUserPosts: "66eb9403e44cc12e5b5ecda48b667d41",
         getUserFollowers: "c76146de99bb02f6415203be841dd25a",
         getPostDetails: "49699cdb479dd5664863d4b647ada1f7",
+        getCovers: "aec5501414615eca36a9acf075655b1e",
         defaultPageSize: 50
     }
 
@@ -22,6 +23,8 @@ var insta = new function () {
     }
 
     this.makeRequest = function ({ queryHash, queryVariables }) {
+        console.log(`${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`);
+        
         return fetch(`${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
         {
             method: 'get',
@@ -70,6 +73,9 @@ var insta = new function () {
         });
         
         return this.makeRequest({ queryHash, queryVariables }).then(res => {
+            // console.log(res);
+            
+
             let edge = _.get(res, `${edgeKey}`);
             if(singleResult){
                 return edge;
@@ -77,7 +83,7 @@ var insta = new function () {
             if (edge) {
                 data = data.concat(edge.edges);
                 if (
-                    edge.page_info.has_next_page &&
+                    edge.page_info && edge.page_info.has_next_page &&
                     (!pagination.hasLimit || pagination.remaining > pagination.pagesize)
                 ) {
                     return this.defaultQuery({
@@ -149,6 +155,17 @@ var insta = new function () {
             edgeKey: 'data.user.edge_owner_to_timeline_media',
             limit,
             end_cursor,
+            data
+        })
+    }
+
+    this.getProfilePic = function ({ identifier, data = [] }) {
+        return this.defaultQuery({
+            queryHash: this.query.getCovers,
+            queryVariables: { "user_id": identifier, include_reel: true },
+            edgeKey: 'data.user.reel.user.profile_pic_url',
+            singleResult: true,
+            limit: 1,
             data
         })
     }
