@@ -1,11 +1,9 @@
-let axios = require("axios");
+const fetch = require('node-fetch');
 let md5 = require('md5');
 let _ = require('lodash');
 
 
 var insta = new function () {
-    this.axiosInstance = null;
-    this.rhxGis = null;
     //USING HTTP BECAUSE OF THE PROXY!!!! TEST STRESSING IF NEED CHANGE TO HTTPS ON THE FUTURE
     this.rootURL = 'http://www.instagram.com/';
     this.graphqlURL = 'http://www.instagram.com/graphql/query/';
@@ -19,64 +17,21 @@ var insta = new function () {
         defaultPageSize: 50
     }
 
-    this.generateRequestSignature = function (queryVariables) {
-        return this.getSignature().then((signature) => {
-            return signature;
-        })
-    };
-
-    // //Used if the client can store the token
-    this.instance = function ({proxy=null}={}) {        
-        if(proxy) {
-            this.axiosInstance = axios.create({ proxy: proxy });
-        } else {
-            this.axiosInstance = axios.create();
-        }
+    this.instance = function () {
         return this;
     }
 
-    this.getSignature = function () {
-        return axios.get(this.rootURL,
-        {
-            "headers": {
-                'credentials': 'include',
-                'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
-            }
-        }).then(r => {
-            let resposeText = r.data;
-            // console.log(resposeText);
-            
-            return {
-                // rhx_gis: (RegExp('"rhx_gis":"([a-f0-9]{32})"', 'g')).exec(resposeText)[1]
-                csrf_token: (RegExp('"csrf_token":"([a-zA-Z0-9]{32})"', 'g')).exec(resposeText)[1]
-            }
-        });
-    }
-
     this.makeRequest = function ({ queryHash, queryVariables }) {
-        // console.log(
-        //     `${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`);
-        
-        // return this.axiosInstance.get(
-        //         `${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
-        //         {
-        //             headers: {
-        //                 'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
-        //                 // 'x-instagram-gis': `${signature}`
-        //             }
-        //         })
-
-        return this.generateRequestSignature(queryVariables)
-            .then(signature => {
-                return this.axiosInstance.get(
-                    `${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
-                    {
-                        headers: {
-                            'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
-                            'X-CSRFToken': `${signature.csrf_token}`
-                        }
-                    })
-            });
+        return fetch(`${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
+        {
+            method: 'get',
+            headers: { 
+                'Content-Type': 'application/json',
+                'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"
+            },
+        })
+        .then(res => res.json())
+        .then(json => { return json });
     }
 
     this.buildPagination = function ({ queryVariables, limit, end_cursor, data = [] }) {
@@ -114,7 +69,7 @@ var insta = new function () {
         });
         
         return this.makeRequest({ queryHash, queryVariables }).then(res => {
-            let edge = _.get(res, `data.${edgeKey}`);
+            let edge = _.get(res, `${edgeKey}`);
             if(singleResult){
                 return edge;
             }
@@ -154,24 +109,25 @@ var insta = new function () {
      */
 
     this.getUser = function ({ identifier }) {
-        return this.axiosInstance.get(
-            `${this.topSearchURL}?query=${identifier}`,
-            {
-                headers: {
-                    'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
-                    // 'x-instagram-gis': `${signature}`
-                }
+        return fetch(`${this.topSearchURL}?query=${identifier}`,
+        {
+            method: 'get',
+            headers: { 
+                'Content-Type': 'application/json',
+                'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"
+            },
+        })
+        .then(res => res.json())
+        .then(res => {
+            return new Promise((resolve, reject) => {
+                res.data.users.forEach(data => {
+                    if(data.user.username == identifier){
+                        resolve(data.user);
+                    }
+                });
+                resolve(null);
             })
-            .then(res => {
-                return new Promise((resolve, reject) => {
-                    res.data.users.forEach(data => {
-                        if(data.user.username == identifier){
-                            resolve(data.user);
-                        }
-                    });
-                    resolve(null);
-                })
-            })
+        })
     }
 
     this.getPostLikes = function ({ identifier, limit, end_cursor, data = [] }) {
