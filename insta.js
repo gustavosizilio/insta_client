@@ -24,7 +24,7 @@ var insta = new function () {
     }
 
     this.makeRequest = function ({ queryHash, queryVariables }) {
-        console.log(`${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`);
+        // console.log(`${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`);
         
         return fetch(`${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
         {
@@ -75,8 +75,6 @@ var insta = new function () {
         
         return this.makeRequest({ queryHash, queryVariables }).then(res => {
             // console.log(res);
-            
-
             let edge = _.get(res, `${edgeKey}`);
             
             if(singleResult){
@@ -119,14 +117,15 @@ var insta = new function () {
 
     this.getUser = function ({ identifier }) {
         let searchUrl = this.searchUserUrl.replace("${username}", identifier);
-        console.log(`${searchUrl}`);
+        // console.log(`${searchUrl}`);
         
         return fetch(`${searchUrl}`,
         {
             method: 'get',
-            headers: { 
+            headers: {
                 'Content-Type': 'application/json',
-                'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"
+                'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
+                'Content-Type': 'text/plain'
             },
         })
         .then(res => res.json())
