@@ -1,4 +1,4 @@
-let insta = new require("./insta").instance({ }); 
+let insta = new require("./insta").instance({ socksUrl: 'socks://127.0.0.1:9050' }); 
 
 
 insta.getUsername({identifier: "26669533"})
