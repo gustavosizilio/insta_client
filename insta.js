@@ -1,5 +1,6 @@
 const fetch = require('node-fetch');
 let SocksProxyAgent = require('socks-proxy-agent');
+let HttpsProxyAgent = require('https-proxy-agent');
 let md5 = require('md5');
 let _ = require('lodash');
 
@@ -20,18 +21,21 @@ var insta = new function () {
         defaultPageSize: 50
     }
 
-    this.instance = function ({socksUrl}) {
-        if(socksUrl){
-            this.agent = new SocksProxyAgent(socksUrl);
+    this.instance = function (params={}) {
+        
+        if(params.socksProxyUrl){
+            this.agent = new SocksProxyAgent(params.socksProxyUrl);
+        } else if(params.httpsProxyUrl) {
+            this.agent = new HttpsProxyAgent(params.httpsProxyUrl);
         }
         return this;
     }
 
     this.makeRequest = function ({ queryHash, queryVariables }) {
-        // console.log(`${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`);
+        console.log(`${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`);
         
         // return fetch("https://ipinfo.io/ip", {
-        //     agent: new SocksProxyAgent('socks://127.0.0.1:9050')
+        //     agent: this.agent
         // }).then(res => res.text())
         // .then(body => console.log(body));
 
@@ -39,9 +43,8 @@ var insta = new function () {
         {
             method: 'get',
             headers: { 
-                'Content-Type': 'application/json',
                 'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
-                'Content-Type': 'text/plain'
+                'Content-Type': 'text/plain',
             },
             agent: this.agent
         })
@@ -127,13 +130,12 @@ var insta = new function () {
 
     this.getUser = function ({ identifier }) {
         let searchUrl = this.searchUserUrl.replace("${username}", identifier);
-        // console.log(`${searchUrl}`);
+        console.log(`${searchUrl}`);
         
         return fetch(`${searchUrl}`,
         {
             method: 'get',
             headers: {
-                'Content-Type': 'application/json',
                 'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
                 'Content-Type': 'text/plain'
             },
@@ -141,6 +143,8 @@ var insta = new function () {
         })
         .then(res => res.json())
         .then(res => {
+            console.log(res);
+            
             return res.graphql.user;
         })
     }
