@@ -9,9 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.18.0",
-    "https-proxy-agent": "^2.2.2",
-    "lodash": "^4.17.11",
+    "axios": "^0.18.1",
+    "https-proxy-agent": "^2.2.4",
+    "lodash": "^4.17.15",
     "md5": "^2.2.1",
     "node-fetch": "^2.6.0",
     "socks-proxy-agent": "^4.0.2"
