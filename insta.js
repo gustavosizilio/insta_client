@@ -128,9 +128,9 @@ var insta = new function () {
      *
      */
 
-    this.getUser = function ({ identifier }) {
+    this.getUserProfile = function ({ identifier }) {
         let searchUrl = this.searchUserUrl.replace("${username}", identifier);
-        console.log(`${searchUrl}`);
+        // console.log(`${searchUrl}`);
         
         return fetch(`${searchUrl}`,
         {
@@ -143,7 +143,7 @@ var insta = new function () {
         })
         .then(res => res.json())
         .then(res => {
-            console.log(res);
+            // console.log(res);
             
             return res.graphql.user;
         })
