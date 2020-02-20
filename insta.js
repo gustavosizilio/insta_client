@@ -1,6 +1,7 @@
 const fetch = require('node-fetch');
 let SocksProxyAgent = require('socks-proxy-agent');
 let HttpsProxyAgent = require('https-proxy-agent');
+let random_useragent = require('random-useragent');
 let md5 = require('md5');
 let _ = require('lodash');
 
@@ -43,7 +44,7 @@ var insta = new function () {
         {
             method: 'get',
             headers: { 
-                'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
+                'user-agent': random_useragent.getRandom(),
                 'Content-Type': 'text/plain',
             },
             agent: this.agent
@@ -136,7 +137,7 @@ var insta = new function () {
         {
             method: 'get',
             headers: {
-                'user-agent': "Mozilla/5.0 (X11; Fedora; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36",
+                'user-agent': random_useragent.getRandom(),
                 'Content-Type': 'text/plain'
             },
             agent: this.agent
