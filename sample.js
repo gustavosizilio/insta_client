@@ -7,20 +7,20 @@ let insta = new require("./insta").instance({ proxy: 'http://67.209.116.227:2400
 //     console.log(data); //Threat the data
 // })
 
-// insta.getUserProfile({identifier: 'neymarjr'})
-//     .then(data => {
-//         console.log(data); //Threat the data
-//     })
+insta.getUserProfile({identifier: 'pelle.faust'})
+    .then(data => {
+        console.log(data); //Threat the data
+    })
 
 // insta.getUserFollowers({identifier: "26669533", limit: 10})
 //     .then(data => {
 //         console.log(data); //Threat the data
 //     })
 
-insta.getUserPosts({identifier: "26669533", limit: 300})
-    .then(data => {
-        console.log(JSON.stringify(data)); //Threat the data
-    })
+// insta.getUserPosts({identifier: "26669533", limit: 300})
+//     .then(data => {
+//         console.log(JSON.stringify(data)); //Threat the data
+//     })
 
 // insta.getPostDetails({identifier: "B2gxtu-o3Oc"})
 //     .then(data => {

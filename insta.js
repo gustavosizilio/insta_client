@@ -32,10 +32,9 @@ var insta = new function () {
         console.log(`${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`);
 
         return superagent.get(`${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`)
-            .set({ 
-                'user-agent': random_useragent.getRandom(),
-                'Content-Type': 'text/plain',
-            }).proxy(this.proxy)
+            .set({ 'user-agent': random_useragent.getRandom() })
+            .set('Accept', 'application/json')
+            .proxy(this.proxy)
             .timeout({
                 response: this.timeout,  //seconds for the server to start sending,
                 deadline: this.timeout, //file to finish loading.
@@ -126,10 +125,9 @@ var insta = new function () {
         
 
         return superagent.get(`${searchUrl}`)
-            .set({ 
-                'user-agent': random_useragent.getRandom(),
-                'Content-Type': 'text/plain',
-            }).proxy(this.proxy)
+            .set({ 'user-agent': random_useragent.getRandom() })
+            .set('Accept', 'application/json')
+            .proxy(this.proxy)
             .timeout({
                 response: this.timeout,  //seconds for the server to start sending,
                 deadline: this.timeout, //file to finish loading.
