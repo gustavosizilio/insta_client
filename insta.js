@@ -47,7 +47,7 @@ var insta = new function () {
                 'user-agent': random_useragent.getRandom(),
                 'Content-Type': 'text/plain',
             },
-            agent: this.agent
+            httpsAgent: this.agent
         })
         .then(res => res.data)
     }
@@ -138,7 +138,7 @@ var insta = new function () {
                 'user-agent': random_useragent.getRandom(),
                 'Content-Type': 'text/plain'
             },
-            agent: this.agent
+            httpsAgent: this.agent
         })
         .then(res => res.data)
         .then(res => {
