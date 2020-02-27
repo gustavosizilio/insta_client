@@ -1,7 +1,5 @@
-// const fetch = require('node-fetch');
-let axios = require('axios');
-let SocksProxyAgent = require('socks-proxy-agent');
-let HttpsProxyAgent = require('https-proxy-agent');
+let superagent = require('superagent');
+require('superagent-proxy')(superagent);
 let random_useragent = require('random-useragent');
 let md5 = require('md5');
 let _ = require('lodash');
@@ -24,32 +22,26 @@ var insta = new function () {
     }
 
     this.instance = function (params={}) {
-        
-        if(params.socksProxyUrl){
-            this.agent = new SocksProxyAgent(params.socksProxyUrl);
-        } else if(params.httpsProxyUrl) {
-            this.agent = new HttpsProxyAgent(params.httpsProxyUrl);
-        }
+        this.proxy = params.proxy;
+        this.timeout = params.timeout;
+        this.retry = params.retry;
         return this;
     }
 
     this.makeRequest = function ({ queryHash, queryVariables }) {
         console.log(`${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`);
-        
-        // return fetch("https://ipinfo.io/ip", {
-        //     agent: this.agent
-        // }).then(res => res.text())
-        // .then(body => console.log(body));
 
-        return axios.get(`${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
-        {
-            headers: { 
+        return superagent.get(`${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`)
+            .set({ 
                 'user-agent': random_useragent.getRandom(),
                 'Content-Type': 'text/plain',
-            },
-            httpsAgent: this.agent
-        })
-        .then(res => res.data)
+            }).proxy(this.proxy)
+            .timeout({
+                response: this.timeout,  //seconds for the server to start sending,
+                deadline: this.timeout, //file to finish loading.
+            })
+            .retry(this.retry)
+            .then(res => { return res.body; })
     }
 
     this.buildPagination = function ({ queryVariables, limit, end_cursor, data = [] }) {
@@ -132,20 +124,22 @@ var insta = new function () {
         let searchUrl = this.searchUserUrl.replace("${username}", identifier);
         // console.log(`${searchUrl}`);
         
-        return axios.get(`${searchUrl}`,
-        {
-            headers: {
+
+        return superagent.get(`${searchUrl}`)
+            .set({ 
                 'user-agent': random_useragent.getRandom(),
-                'Content-Type': 'text/plain'
-            },
-            httpsAgent: this.agent
-        })
-        .then(res => res.data)
-        .then(res => {
-            // console.log(res);
-            
-            return res.graphql.user;
-        })
+                'Content-Type': 'text/plain',
+            }).proxy(this.proxy)
+            .timeout({
+                response: this.timeout,  //seconds for the server to start sending,
+                deadline: this.timeout, //file to finish loading.
+            })
+            .retry(this.retry)
+            .then(res => res.body)
+            .then(res => {
+                return res.graphql.user;
+            })
+        
     }
     this.getUsername = function ({ identifier}) {
         return this.defaultQuery({

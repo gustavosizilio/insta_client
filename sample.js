@@ -1,5 +1,5 @@
 // let insta = new require("./insta").instance({ httpsProxyUrl: 'http://185.61.92.207:34364' }); 
-let insta = new require("./insta").instance({ httpsProxyUrl: 'http://67.209.116.227:24000/' }); 
+let insta = new require("./insta").instance({ proxy: 'http://67.209.116.227:24001/', timeout: 150000, retry: 5 }); 
 
 
 // insta.getUsername({identifier: "26669533"})
