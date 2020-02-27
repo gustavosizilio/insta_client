@@ -1,4 +1,5 @@
-const fetch = require('node-fetch');
+// const fetch = require('node-fetch');
+let axios = require('axios');
 let SocksProxyAgent = require('socks-proxy-agent');
 let HttpsProxyAgent = require('https-proxy-agent');
 let random_useragent = require('random-useragent');
@@ -40,17 +41,15 @@ var insta = new function () {
         // }).then(res => res.text())
         // .then(body => console.log(body));
 
-        return fetch(`${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
+        return axios.get(`${this.graphqlURL}?query_hash=${queryHash}&variables=${JSON.stringify(queryVariables)}`,
         {
-            method: 'get',
             headers: { 
                 'user-agent': random_useragent.getRandom(),
                 'Content-Type': 'text/plain',
             },
             agent: this.agent
         })
-        .then(res => res.json())
-        .then(json => { return json });
+        .then(res => res.data)
     }
 
     this.buildPagination = function ({ queryVariables, limit, end_cursor, data = [] }) {
@@ -133,16 +132,15 @@ var insta = new function () {
         let searchUrl = this.searchUserUrl.replace("${username}", identifier);
         // console.log(`${searchUrl}`);
         
-        return fetch(`${searchUrl}`,
+        return axios.get(`${searchUrl}`,
         {
-            method: 'get',
             headers: {
                 'user-agent': random_useragent.getRandom(),
                 'Content-Type': 'text/plain'
             },
             agent: this.agent
         })
-        .then(res => res.json())
+        .then(res => res.data)
         .then(res => {
             // console.log(res);
             

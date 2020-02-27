@@ -9,7 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.18.1",
+    "axios": "^0.19.2",
     "https-proxy-agent": "^2.2.4",
     "lodash": "^4.17.15",
     "md5": "^2.2.1",
